@@ -1,0 +1,28 @@
+﻿{
+  "ext_settings": [ "some_rule.json", "http://excample.com/some_rule.json" ],
+  "conn_settings": [
+    {
+      "type": "ms",
+      "cs": "test mssql conn string",
+      "name": "test"
+    },
+    {
+      "type": "pg",
+      "cs": "test postgre conn string",
+      "name": "test"
+    },
+    {
+      "type": "mc",
+      "cs": "test mssql conn string like http://excample.com/",
+      "name": "test"
+    }
+  ],
+  "rules": [
+    {
+      "rule_name": "reload_rules",
+      "repeat_timeout": 30000,
+      "type": "ReloadRules",
+      "query": "rules.json"
+    }
+  ]
+}

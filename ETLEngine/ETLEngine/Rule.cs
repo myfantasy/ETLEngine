@@ -1,0 +1,195 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MyFantasy.ETLEngine
+{
+    public class Rule
+    {
+        public Dictionary<string, object> Params = new Dictionary<string, object>();
+
+        public DateTime? LastStart = null;
+        public DateTime? LastFinish = null;
+
+        public string RuleName { get { return Params.GetElement<string>("rule_name"); } }
+
+        public string Type { get { return Params.GetElement<string>("type"); } }
+        public string SrcType { get { return Params.GetElement<string>("src_type"); } }
+        public string SrcName { get { return Params.GetElement<string>("src_name"); } }
+        public string DstType { get { return Params.GetElement<string>("dst_type"); } }
+        public string DstName { get { return Params.GetElement<string>("dst_name"); } }
+        public string SrcUrl { get { return Params.GetElement<string>("src_url"); } }
+        public string Query { get { return Params.GetElement<string>("query"); } }
+        public string SrcTable { get { return Params.GetElement<string>("src_table"); } }
+        public string SrcIDName { get { return Params.GetElement<string>("src_id_name"); } }
+        public string DstTable { get { return Params.GetElement<string>("dst_table"); } }
+        public int Timeout { get { return (int)Params.GetElement("timeout").TryParseOrDefault(10L); } }
+        public int Limit { get { return (int)Params.GetElement("limit").TryParseOrDefault(1000L); } }
+        public string DstReadyFlagName { get { return Params.GetElement<string>("dst_ready_flag_name"); } }
+        public string SrcCompliteProc { get { return Params.GetElement<string>("src_complite_proc"); } }
+        public string DstPrepareCompliteProc { get { return Params.GetElement<string>("dst_prepare_complite_proc"); } }
+        public string DstCompliteProc { get { return Params.GetElement<string>("dst_complite_proc"); } }
+
+        public long? RepeatTimeout { get { return Params.GetElement<long?>("repeat_timeout"); } }
+
+        public bool isEnable = true;
+
+        public static List<Rule> LoadSettingsFromFile(string file_name)
+        {
+            List<Rule> res = new List<Rule>();
+            if (file_name.Like("http://") || file_name.Like("https://"))
+            {
+                var r = HttpQuery.CallServiceGet(file_name).GetAwaiter().GetResult();
+                if (r.Item2 == System.Net.HttpStatusCode.OK)
+                {
+                    res.AddRange(LoadSettings(r.Item1));
+                }
+            }
+            else if (!file_name.IsNullOrWhiteSpace() && File.Exists(file_name))
+            {
+                string s = File.ReadAllText(file_name);
+
+                res.AddRange(LoadSettings(s));
+            }
+            else
+            {
+            }
+            return res;
+        }
+
+        public static List<Rule> LoadSettings(string json)
+        {
+            List<Rule> res = new List<Rule>();
+            var js = json.TryGetFromJson();
+            var conn_settings = js.GetElement<LO>("conn_settings");
+
+            if (!conn_settings.IsNullOrEmpty())
+            {
+                foreach (var cs in conn_settings)
+                {
+                    string type = cs.GetElement_DO<string>("type");
+                    string conn_string = cs.GetElement_DO<string>("cs");
+                    string name = cs.GetElement_DO<string>("name");
+                    if (!conn_string.IsNullOrWhiteSpace())
+                    {
+                        if (type == "ms")
+                        {
+                            QueryHandler.ConnStrings.AddOrUpdate(name, conn_string);
+                        }
+                        if (type == "pg")
+                        {
+                            QueryHandlerPg.ConnStrings.AddOrUpdate(name, conn_string);
+                        }
+                        if (type == "mc")
+                        {
+                            HttpQuery.McServers.AddOrUpdate(name, conn_string);
+                        }
+                    }
+                }
+            }
+
+            var rules = js.GetElement<LO>("rules");
+            if (!rules.IsNullOrEmpty())
+            {
+                foreach (var cs in rules)
+                {
+                    var d = cs as Dictionary<string, object>;
+                    if (d != null)
+                    {
+                        Rule r = new Rule() { Params = d };
+                        res.Add(r);
+                    }
+                }
+            }
+            var ext_settings = js.GetElement<LO>("ext_settings");
+            if (!ext_settings.IsNullOrEmpty())
+            {
+                foreach (var cs in ext_settings)
+                {
+                    string file_name = cs as string;
+                    res.AddRange(LoadSettingsFromFile(file_name));
+                }
+            }
+
+            return res;
+        }
+
+        public Task t = null;
+
+        public void Execute()
+        {
+            try
+            {
+                string type = Type;
+                if (type == "job")
+                {
+                    Common.Job.DoRule(this);
+                }
+                else if (type == "QueueLoad")
+                {
+                    Common.CopyTable.QueueLoad(this);
+                }
+                else if (type == "CopyToTable")
+                {
+                    Common.CopyTable.CopyToTable(this);
+                }
+                else if (type == "CopyToTable")
+                {
+                    Common.CopyTable.CopyToTable(this);
+                }
+                else if (type == "ReloadRules")
+                {
+                    Dispatcher.ReloadRules(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+
+        public void ExecuteInTask()
+        {
+            if (t == null || t.Status == TaskStatus.RanToCompletion || t.Status == TaskStatus.Canceled || t.Status == TaskStatus.Faulted)
+            {
+                Action a = Execute;
+                t = new Task(() =>
+                {
+                    lock (this)
+                    {
+                        try
+                        {
+                            LastStart = DateTime.Now;
+                            a();
+                            LastFinish = DateTime.Now;
+                        }
+                        catch (Exception ex)
+                        {
+                            Error(ex);
+                            LastFinish = DateTime.Now;
+                        }
+                    }
+                });
+                // LOG There
+                t.Start();
+            }
+        }
+
+        public void Error(Exception ex)
+        {
+            OnError?.Invoke(this, ex);
+        }
+        public void Complite()
+        {
+            OnComplite?.Invoke(this);
+        }
+
+        public static Action<Rule> OnComplite;
+        public static Action<Rule, Exception> OnError;
+    }
+}
