@@ -8,7 +8,7 @@ namespace MyFantasy.ETLEngine.Common
 {
     public static class CopyTable
     {
-        public static bool CopyToTable(Rule r)
+        public static bool CopyToTable(Rule r, bool set_complite = true)
         {
             var src_type = r.SrcType;
             var src_name = r.SrcName;
@@ -100,7 +100,8 @@ namespace MyFantasy.ETLEngine.Common
                 if (src_query.Execute_Step(src_name, out var res, limit,
                         write_func, timeout))
                 {
-                    r.Complite();
+                    if (set_complite)
+                        r.Complite();
                     return true;
                 }
                 else
@@ -113,7 +114,8 @@ namespace MyFantasy.ETLEngine.Common
                 if (src_query.Execute_Step(out var res, src_name, limit,
                         write_func, timeout))
                 {
-                    r.Complite();
+                    if (set_complite)
+                        r.Complite();
                     return true;
                 }
                 else
@@ -126,7 +128,8 @@ namespace MyFantasy.ETLEngine.Common
                 if (src_query.ExecutePg_Step(src_name, out var res, limit,
                         write_func, timeout))
                 {
-                    r.Complite();
+                    if (set_complite)
+                        r.Complite();
                     return true;
                 }
                 else
@@ -139,7 +142,8 @@ namespace MyFantasy.ETLEngine.Common
                 if (src_query.ExecutePg_Step(out var res, src_name, limit,
                         write_func, timeout))
                 {
-                    r.Complite();
+                    if (set_complite)
+                        r.Complite();
                     return true;
                 }
                 else
@@ -363,7 +367,10 @@ namespace MyFantasy.ETLEngine.Common
             // Грузим сообщения
             // Грузим то что накопилось в очереди и не обработано
 
-            return QueueLoadComplite(r) && CopyToTable(r) && QueueLoadComplite(r);
+            var res = QueueLoadComplite(r) && CopyToTable(r, false) && QueueLoadComplite(r);
+            if (res)
+                r.Complite();
+            return res;
         }
 
     }

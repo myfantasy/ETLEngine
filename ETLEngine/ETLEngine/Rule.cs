@@ -13,6 +13,15 @@ namespace MyFantasy.ETLEngine
     {
         public Dictionary<string, object> Params = new Dictionary<string, object>();
 
+        public Dictionary<string, Action<Rule>> ExecuteFuncs = new Dictionary<string, Action<Rule>>()
+        {
+            { "Job",  Common.Job.DoRule },
+            { "QueueLoad", (r) => Common.CopyTable.QueueLoad(r) },
+            { "CopyToTable", (r) => Common.CopyTable.CopyToTable(r) },
+            { "ReloadRules",  Dispatcher.ReloadRules }
+        };        
+
+
         public DateTime? LastStart = null;
         public DateTime? LastFinish = null;
 
@@ -38,6 +47,13 @@ namespace MyFantasy.ETLEngine
         public long? RepeatTimeout { get { return Params.GetElement<long?>("repeat_timeout"); } }
 
         public bool isEnable = true;
+
+
+        public string ErrorUrl { get { return Params.GetElement<string>("error_url"); } }
+        public string CompliteUrl { get { return Params.GetElement<string>("complite_url"); } }
+
+        public static string GlobalErrorUrl = null;
+        public static string GlobalCompliteUrl = null;
 
         public static List<Rule> LoadSettingsFromFile(string file_name)
         {
@@ -67,6 +83,9 @@ namespace MyFantasy.ETLEngine
             List<Rule> res = new List<Rule>();
             var js = json.TryGetFromJson();
             var conn_settings = js.GetElement<LO>("conn_settings");
+
+            GlobalErrorUrl = js.ContainsElement("global_error_url") ? js.GetElement<string>("global_error_url") : GlobalErrorUrl;
+            GlobalCompliteUrl = js.ContainsElement("global_error_url") ? js.GetElement<string>("global_complite_url") : GlobalCompliteUrl;
 
             if (!conn_settings.IsNullOrEmpty())
             {
@@ -126,25 +145,9 @@ namespace MyFantasy.ETLEngine
             try
             {
                 string type = Type;
-                if (type == "job")
+                if (ExecuteFuncs.TryGetValue(type, out var a))
                 {
-                    Common.Job.DoRule(this);
-                }
-                else if (type == "QueueLoad")
-                {
-                    Common.CopyTable.QueueLoad(this);
-                }
-                else if (type == "CopyToTable")
-                {
-                    Common.CopyTable.CopyToTable(this);
-                }
-                else if (type == "CopyToTable")
-                {
-                    Common.CopyTable.CopyToTable(this);
-                }
-                else if (type == "ReloadRules")
-                {
-                    Dispatcher.ReloadRules(this);
+                    a(this);
                 }
             }
             catch (Exception ex)
