@@ -15,7 +15,7 @@ namespace MyFantasy.ETLEngine
 
         public Dictionary<string, Action<Rule>> ExecuteFuncs = new Dictionary<string, Action<Rule>>()
         {
-            { "Job",  Common.Job.DoRule },
+            { "Job",  Common.Job.DoJob },
             { "QueueLoad", (r) => Common.CopyTable.QueueLoad(r) },
             { "CopyToTable", (r) => Common.CopyTable.CopyToTable(r) },
             { "ReloadRules",  Dispatcher.ReloadRules }
@@ -78,6 +78,30 @@ namespace MyFantasy.ETLEngine
             return res;
         }
 
+        public static List<Rule> LoadSettingsFromDSO(Dictionary<string, object> dso)
+        {
+            var res = new List<Rule>();
+            string type = dso.GetElement<string>("type");
+            if (type.In("pg","ms", "ms_direct", "pg_direct"))
+            {
+                DataResult dr = null;
+                string query = dso.GetElement<string>("query");
+                string src_name = dso.GetElement<string>("src_name");
+
+                if (type == "pg" && query.ExecutePg(src_name, out dr) || type == "pg_direct" && query.ExecutePg(out dr, src_name)
+                    || type == "ms" && query.Execute(src_name, out dr) || type == "ms_direct" && query.Execute(out dr, src_name))
+                {
+                    if (dr.res.Any())
+                    {
+                        string s = dr.res[0][0].FirstOrDefault().Value.ToString();
+                        res.AddRange(LoadSettings(s));
+                    }
+                }
+                
+            }
+            return res;
+        }
+
         public static List<Rule> LoadSettings(string json)
         {
             List<Rule> res = new List<Rule>();
@@ -93,6 +117,7 @@ namespace MyFantasy.ETLEngine
                 {
                     string type = cs.GetElement_DO<string>("type");
                     string conn_string = cs.GetElement_DO<string>("cs");
+                    List<object> conn_string_lo = cs.GetElement_DO<List<object>>("cs");
                     string name = cs.GetElement_DO<string>("name");
                     if (!conn_string.IsNullOrWhiteSpace())
                     {
@@ -107,6 +132,23 @@ namespace MyFantasy.ETLEngine
                         if (type == "mc")
                         {
                             HttpQuery.McServers.AddOrUpdate(name, conn_string);
+                        }
+                    }
+
+                    if (conn_string_lo != null)
+                    {
+                        var conn_group = QueryHandler.ConnStringGroup.Create(conn_string_lo);
+                        if (type == "ms")
+                        {
+                            QueryHandler.ConnGroups.AddOrUpdate(name, conn_group);
+                        }
+                        if (type == "pg")
+                        {
+                            QueryHandlerPg.ConnGroups.AddOrUpdate(name, conn_group);
+                        }
+                        if (type == "mc")
+                        {
+                            HttpQuery.McGroups.AddOrUpdate(name, conn_group);
                         }
                     }
                 }
@@ -130,8 +172,16 @@ namespace MyFantasy.ETLEngine
             {
                 foreach (var cs in ext_settings)
                 {
-                    string file_name = cs as string;
-                    res.AddRange(LoadSettingsFromFile(file_name));
+                    if (cs is string)
+                    {
+                        string file_name = cs as string;
+                        res.AddRange(LoadSettingsFromFile(file_name));
+                    }
+                    else if (cs is Dictionary<string, object>)
+                    {
+                        Dictionary<string, object> dso = cs as Dictionary<string, object>;
+                        res.AddRange(LoadSettingsFromDSO(dso));
+                    }
                 }
             }
 
@@ -186,13 +236,27 @@ namespace MyFantasy.ETLEngine
         public void Error(Exception ex)
         {
             OnError?.Invoke(this, ex);
+
+            string url = ErrorUrl ?? GlobalErrorUrl;
+
+            if (!url.IsNullOrWhiteSpace())
+            {
+                HttpQuery.CallService(url, new Dictionary<string, object>() { { "exception", ex.Message }, { "trace", ex.StackTrace }, { "name", RuleName }, { "date_last_start", LastStart }, { "date_err", DateTime.Now } }, timeoutSeconds: 10).GetAwaiter().GetResult();
+            }
         }
         public void Complite()
         {
             OnComplite?.Invoke(this);
+
+            string url = CompliteUrl ?? GlobalCompliteUrl;
+
+            if (!url.IsNullOrWhiteSpace())
+            {
+                HttpQuery.CallService(url, new Dictionary<string, object>() { { "name", RuleName }, { "date_last_start", LastStart }, { "date_complite", DateTime.Now } }, timeoutSeconds: 10).GetAwaiter().GetResult();
+            }
         }
 
-        public static Action<Rule> OnComplite;
-        public static Action<Rule, Exception> OnError;
+        public static event Action<Rule> OnComplite;
+        public static event Action<Rule, Exception> OnError;
     }
 }

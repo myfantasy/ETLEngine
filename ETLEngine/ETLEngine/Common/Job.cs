@@ -9,7 +9,7 @@ namespace MyFantasy.ETLEngine.Common
 {
     public static class Job
     {
-        public static void DoRule(Rule r)
+        public static void DoJob(Rule r)
         {
             var src_type = r.SrcType;
             var src_name = r.SrcName;
@@ -93,7 +93,7 @@ namespace MyFantasy.ETLEngine.Common
                 }
                 else if (src_type == "mc")
                 {
-                    var res = HttpQuery.CallNamedServiceGet(src_url, src_name, timeoutSeconds: timeout).GetAwaiter().GetResult();
+                    var res = HttpQuery.CallServiceGet(src_url, src_name, timeoutSeconds: timeout).GetAwaiter().GetResult();
 
                     if (res.Item2 == System.Net.HttpStatusCode.OK)
                     {

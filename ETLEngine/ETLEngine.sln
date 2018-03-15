@@ -3,9 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETLEngine", "ETLEngine\ETLEngine.csproj", "{FFB0AD3B-571E-4B56-B19A-DF3F1F20D94E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ETLEngine", "ETLEngine\ETLEngine.csproj", "{FFB0AD3B-571E-4B56-B19A-DF3F1F20D94E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETLBot", "ETLBot\ETLBot.csproj", "{22C61FC0-AEEA-45D8-9011-232913465505}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ETLBot", "ETLBot\ETLBot.csproj", "{22C61FC0-AEEA-45D8-9011-232913465505}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{97607DEF-5D0A-454E-8B4B-F6229CF2572D}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
