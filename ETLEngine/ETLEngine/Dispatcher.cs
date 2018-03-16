@@ -10,12 +10,27 @@ namespace MyFantasy.ETLEngine
     {
         public static Dictionary<string, Rule> Rules = new Dictionary<string, Rule>();
 
+
+        /// <summary>
+        /// Заргузка прошла по правилу
+        /// </summary>
+        public static event Action OnReload;
+
         public static void ReloadRules(Rule r)
         {
-            ReloadRules(r.Query);
+            var res = ReloadRules(r.Query);
+            if (res)
+            {
+                r.Complite();
+                OnReload?.Invoke();
+            }
+            else
+            {
+                r.Error(new Exception("ReloadRules.Fail"));
+            }
         }
 
-        public static void ReloadRules(string path)
+        public static bool ReloadRules(string path)
         {
             lock (Rules)
             {
@@ -23,7 +38,7 @@ namespace MyFantasy.ETLEngine
 
                 if (!(rules?.Any() ?? false))
                 {
-                    return;
+                    return false;
                 }
 
                 Dictionary<string, bool> ar = new Dictionary<string, bool>();
@@ -58,6 +73,8 @@ namespace MyFantasy.ETLEngine
                 {
                     Rules.Remove(v.Key);
                 }
+
+                return true;
             }
         }
 

@@ -46,6 +46,8 @@ namespace MyFantasy.ETLEngine
 
         public long? RepeatTimeout { get { return Params.GetElement<long?>("repeat_timeout"); } }
 
+        public bool DoNotSendComplite { get { return Params.GetElement<bool>("do_not_send_complite"); } }
+
         public bool isEnable = true;
 
 
@@ -248,15 +250,25 @@ namespace MyFantasy.ETLEngine
         {
             OnComplite?.Invoke(this);
 
-            string url = CompliteUrl ?? GlobalCompliteUrl;
-
-            if (!url.IsNullOrWhiteSpace())
+            if (DoNotSendComplite)
             {
-                HttpQuery.CallService(url, new Dictionary<string, object>() { { "name", RuleName }, { "date_last_start", LastStart }, { "date_complite", DateTime.Now } }, timeoutSeconds: 10).GetAwaiter().GetResult();
+                string url = CompliteUrl ?? GlobalCompliteUrl;
+
+                if (!url.IsNullOrWhiteSpace())
+                {
+                    HttpQuery.CallService(url, new Dictionary<string, object>() { { "name", RuleName }, { "date_last_start", LastStart }, { "date_complite", DateTime.Now } }, timeoutSeconds: 10).GetAwaiter().GetResult();
+                }
             }
         }
 
+        /// <summary>
+        /// Таск выполнен успешно
+        /// </summary>
         public static event Action<Rule> OnComplite;
+
+        /// <summary>
+        /// Таск выполнен не успешно
+        /// </summary>
         public static event Action<Rule, Exception> OnError;
     }
 }
