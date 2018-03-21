@@ -271,7 +271,7 @@ namespace MyFantasy.ETLEngine.Common
                     else if (src_type == "pg")
                     {
                         string src_complite_proc_do = src_complite_proc?.Replace("{array}", ids.ConvertToDB(FieldHandler.DbTypes.PG));
-                        string query = src_complite_proc_do ?? "delete " + src_table + " where " + src_id_name +" = any("+ ids.ConvertToDB() + ");";
+                        string query = src_complite_proc_do ?? "delete from " + src_table + " where " + src_id_name +" = any("+ ids.ConvertToDB() + ");";
                         if (query.ExecutePg(src_name, out var res, timeout))
                         {
                         }
@@ -284,7 +284,7 @@ namespace MyFantasy.ETLEngine.Common
                     else if (src_type == "pg_direct")
                     {
                         string src_complite_proc_do = src_complite_proc?.Replace("{array}", ids.ConvertToDB(FieldHandler.DbTypes.PG));
-                        string query = src_complite_proc_do ?? "delete " + src_table + " where " + src_id_name + " = any(" + ids.ConvertToDB() + ");";
+                        string query = src_complite_proc_do ?? "delete from " + src_table + " where " + src_id_name + " = any(" + ids.ConvertToDB() + ");";
                         if (query.ExecutePg(out var res, src_name, timeout))
                         {
                         }

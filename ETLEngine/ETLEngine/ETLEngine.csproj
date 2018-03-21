@@ -7,10 +7,11 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>MyFantasy.ru</Authors>
     <Company>MyFantasy.ru</Company>
-    <Version>1.0.0.3</Version>
+    <Version>1.0.0.5</Version>
     <Description>Простой ETL</Description>
     <RepositoryUrl>https://github.com/myfantasy/ETLEngine</RepositoryUrl>
-    <FileVersion>1.0.0.3</FileVersion>
+    <FileVersion>1.0.0.5</FileVersion>
+    <AssemblyVersion>1.0.0.5</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

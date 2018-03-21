@@ -13,7 +13,7 @@ namespace MyFantasy.ETLEngine
     {
         public Dictionary<string, object> Params = new Dictionary<string, object>();
 
-        public Dictionary<string, Action<Rule>> ExecuteFuncs = new Dictionary<string, Action<Rule>>()
+        public static Dictionary<string, Action<Rule>> ExecuteFuncs = new Dictionary<string, Action<Rule>>()
         {
             { "Job",  Common.Job.DoJob },
             { "QueueLoad", (r) => Common.CopyTable.QueueLoad(r) },
