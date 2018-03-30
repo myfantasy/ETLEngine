@@ -35,6 +35,7 @@ namespace MyFantasy.ETLEngine
         public string SrcUrl { get { return Params.GetElement<string>("src_url"); } }
         public string Query { get { return Params.GetElement<string>("query"); } }
         public string SrcTable { get { return Params.GetElement<string>("src_table"); } }
+        public string SrcQuery { get { return Params.GetElement<string>("src_query"); } }
         public string SrcIDName { get { return Params.GetElement<string>("src_id_name"); } }
         public string DstTable { get { return Params.GetElement<string>("dst_table"); } }
         public int Timeout { get { return (int)Params.GetElement("timeout").TryParseOrDefault(10L); } }

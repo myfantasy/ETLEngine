@@ -18,7 +18,7 @@ namespace MyFantasy.ETLEngine.Common
 
             var src_id_name = r.SrcIDName;
 
-            var src_query = r.Query ?? "select * from " + r.SrcTable + (src_id_name.IsNullOrWhiteSpace() ? "" : " order by " + src_id_name) + ";";
+            var src_query = r.SrcQuery ?? "select * from " + r.SrcTable + (src_id_name.IsNullOrWhiteSpace() ? "" : " order by " + src_id_name) + ";";
             var dst_table = r.DstTable;
 
             var timeout = r.Timeout;
@@ -361,15 +361,32 @@ namespace MyFantasy.ETLEngine.Common
             return true;
         }
 
-        public static bool QueueLoad(Rule r)
+        public static bool QueueLoad(Rule r, bool set_complite = true)
         {
             // Грузим то что накопилось в очереди и не обработано
             // Грузим сообщения
             // Грузим то что накопилось в очереди и не обработано
+            // Делаем Жоб
 
             var res = QueueLoadComplite(r) && CopyToTable(r, false) && QueueLoadComplite(r);
             if (res)
-                r.Complite();
+            {
+                if (r.Query.IsNullOrWhiteSpace())
+                {
+                    if (set_complite)
+                        r.Complite();
+                }
+                else
+                {
+                    res = Job.DoJob(r, src_type : r.DstType,
+                                        src_name: r.DstName,
+                                        src_url: null,
+                                        query: r.Query,
+                                        limit: r.Limit,
+                                        timeout: r.Timeout,
+                                        set_complite: set_complite);
+                }
+            }
             return res;
         }
 

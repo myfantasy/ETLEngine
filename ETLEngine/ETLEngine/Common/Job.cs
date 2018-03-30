@@ -19,6 +19,11 @@ namespace MyFantasy.ETLEngine.Common
 
             var timeout = r.Timeout;
 
+            DoJob(r, src_type, src_name, src_url, query, limit, timeout);
+        }
+        public static bool DoJob(Rule r, string src_type, string src_name, string src_url, string query, int limit, int timeout, bool set_complite = true)
+        {          
+
             bool recall = true;
             int i = 0;
 
@@ -40,7 +45,7 @@ namespace MyFantasy.ETLEngine.Common
                     else
                     {
                         r.Error(result.e);
-                        return;
+                        return false;
                     }
                 }
                 else if (src_type == "ms_direct")
@@ -55,7 +60,7 @@ namespace MyFantasy.ETLEngine.Common
                     else
                     {
                         r.Error(result.e);
-                        return;
+                        return false;
                     }
 
                 }
@@ -71,7 +76,7 @@ namespace MyFantasy.ETLEngine.Common
                     else
                     {
                         r.Error(result.e);
-                        return;
+                        return false;
                     }
 
                 }
@@ -87,7 +92,7 @@ namespace MyFantasy.ETLEngine.Common
                     else
                     {
                         r.Error(result.e);
-                        return;
+                        return false;
                     }
 
                 }
@@ -107,7 +112,7 @@ namespace MyFantasy.ETLEngine.Common
                     else
                     {
                         r.Error(new Exception(res.Item1));
-                        return;
+                        return false;
                     }
 
                 }
@@ -127,12 +132,14 @@ namespace MyFantasy.ETLEngine.Common
                     else
                     {
                         r.Error(new Exception(res.Item1));
-                        return;
+                        return false;
                     }
                 }
             }
 
-            r.Complite();
+            if (set_complite)
+                r.Complite();
+            return true;
         }
     }
 }
