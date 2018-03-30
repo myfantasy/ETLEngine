@@ -44,7 +44,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(result.e);
+                        r.Error("Ошибка выполнения джоба ms", result.e);
                         return false;
                     }
                 }
@@ -59,7 +59,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(result.e);
+                        r.Error("Ошибка выполнения джоба ms_direct", result.e);
                         return false;
                     }
 
@@ -75,7 +75,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(result.e);
+                        r.Error("Ошибка выполнения джоба pg", result.e);
                         return false;
                     }
 
@@ -91,7 +91,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(result.e);
+                        r.Error("Ошибка выполнения джоба pg_direct", result.e);
                         return false;
                     }
 
@@ -111,7 +111,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(new Exception(res.Item1));
+                        r.Error("Ошибка выполнения джоба mc", new Exception(res.Item1));
                         return false;
                     }
 
@@ -131,7 +131,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(new Exception(res.Item1));
+                        r.Error("Ошибка выполнения джоба mc_direct", new Exception(res.Item1));
                         return false;
                     }
                 }

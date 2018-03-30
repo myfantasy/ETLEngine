@@ -205,7 +205,7 @@ namespace MyFantasy.ETLEngine
             }
             catch (Exception ex)
             {
-                Error(ex);
+                Error("Не контролируемая ошибка", ex);
             }
         }
 
@@ -226,7 +226,7 @@ namespace MyFantasy.ETLEngine
                         }
                         catch (Exception ex)
                         {
-                            Error(ex);
+                            Error("Не контролируемая ошибка в t", ex);
                             LastFinish = DateTime.Now;
                         }
                     }
@@ -234,6 +234,11 @@ namespace MyFantasy.ETLEngine
                 // LOG There
                 t.Start();
             }
+        }
+
+        public void Error(string err_descr,Exception ex)
+        {
+            Error(new Exception(err_descr + "\r\n" + ex.Message, ex));
         }
 
         public void Error(Exception ex)

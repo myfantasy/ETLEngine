@@ -28,7 +28,7 @@ namespace MyFantasy.ETLEngine.Common
             //string src_conn_string, string dst_conn_string, string src_query, string dst_table, int limit, int timeout, out Exception ex
 
 
-            Func<List<Tuple<Type, string>>, List<Dictionary<string, object>>, bool> write_func = null;
+            Func<List<Tuple<Type, string>>, List<Dictionary<string, object>>, Tuple<bool, Exception>> write_func = null;
 
             if (dst_type == "ms")
             {
@@ -36,12 +36,12 @@ namespace MyFantasy.ETLEngine.Common
                 {
                     if (dst_table.Execute_Bulk(dst_name, out var res_in, f, d, timeout))
                     {
-                        return true;
+                        return new Tuple<bool, Exception>(true, null);
                     }
                     else
                     {
-                        r.Error(res_in.e);
-                        return false;
+                        r.Error("Запись в целевую таблицу ms", res_in.e);
+                        return new Tuple<bool, Exception>(false, res_in.e);
                     }
                 };
             }
@@ -51,12 +51,12 @@ namespace MyFantasy.ETLEngine.Common
                 {
                     if (dst_table.Execute_Bulk(out var res_in, dst_name, f, d, timeout))
                     {
-                        return true;
+                        return new Tuple<bool, Exception>(true, null);
                     }
                     else
                     {
-                        r.Error(res_in.e);
-                        return false;
+                        r.Error("Запись в целевую таблицу ms_direct", res_in.e);
+                        return new Tuple<bool, Exception>(false, res_in.e);
                     }
                 };
             }
@@ -67,12 +67,12 @@ namespace MyFantasy.ETLEngine.Common
                     var e = QueryHandlerPg.Copy(d, f, dst_table, dst_name);
                     if (e == null)
                     {
-                        return true;
+                        return new Tuple<bool, Exception>(true, null);
                     }
                     else
                     {
-                        r.Error(e);
-                        return false;
+                        r.Error("Запись в целевую таблицу pg", e);
+                        return new Tuple<bool, Exception>(false, e);
                     }
                 };
 
@@ -84,12 +84,12 @@ namespace MyFantasy.ETLEngine.Common
                     var e = QueryHandlerPg.Copy(dst_name, d, f, dst_table);
                     if (e == null)
                     {
-                        return true;
+                        return new Tuple<bool, Exception>(true, null);
                     }
                     else
                     {
-                        r.Error(e);
-                        return false;
+                        r.Error("Запись в целевую таблицу pg_direct", e);
+                        return new Tuple<bool, Exception>(false, e);
                     }
                 };
             }
@@ -106,7 +106,7 @@ namespace MyFantasy.ETLEngine.Common
                 }
                 else
                 {
-                    r.Error(res.e);
+                    r.Error("Получение данных из источника ms", res.e);
                 }
             }
             else if (src_type == "ms_direct")
@@ -120,7 +120,7 @@ namespace MyFantasy.ETLEngine.Common
                 }
                 else
                 {
-                    r.Error(res.e);
+                    r.Error("Получение данных из источника ms_direct", res.e);
                 }
             }
             else if (src_type == "pg")
@@ -134,7 +134,7 @@ namespace MyFantasy.ETLEngine.Common
                 }
                 else
                 {
-                    r.Error(res.e);
+                    r.Error("Получение данных из источника pg", res.e);
                 }
             }
             else if (src_type == "pg_direct")
@@ -148,7 +148,7 @@ namespace MyFantasy.ETLEngine.Common
                 }
                 else
                 {
-                    r.Error(res.e);
+                    r.Error("Получение данных из источника pg_direct", res.e);
                 }
             }
             
@@ -193,7 +193,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(res.e);
+                        r.Error("Получение данных из целевой таблицы для удаления ms", res.e);
                         return false;
                     }
                 }
@@ -206,7 +206,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(res.e);
+                        r.Error("Получение данных из целевой таблицы для удаления ms_direct", res.e);
                         return false;
                     }
 
@@ -220,7 +220,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(res.e);
+                        r.Error("Получение данных из целевой таблицы для удаления pg", res.e);
                         return false;
                     }
                 }
@@ -233,7 +233,7 @@ namespace MyFantasy.ETLEngine.Common
                     }
                     else
                     {
-                        r.Error(res.e);
+                        r.Error("Получение данных из целевой таблицы для удаления pg_direct", res.e);
                         return false;
                     }
                 }
@@ -251,7 +251,7 @@ namespace MyFantasy.ETLEngine.Common
                         }
                         else
                         {
-                            r.Error(res.e);
+                            r.Error("Удаление из очереди ms", res.e);
                             return false;
                         }
                     }
@@ -264,7 +264,7 @@ namespace MyFantasy.ETLEngine.Common
                         }
                         else
                         {
-                            r.Error(res.e);
+                            r.Error("Удаление из очереди ms_direct", res.e);
                             return false;
                         }
                     }
@@ -277,7 +277,7 @@ namespace MyFantasy.ETLEngine.Common
                         }
                         else
                         {
-                            r.Error(res.e);
+                            r.Error("Удаление из очереди pg", res.e);
                             return false;
                         }
                     }
@@ -290,7 +290,7 @@ namespace MyFantasy.ETLEngine.Common
                         }
                         else
                         {
-                            r.Error(res.e);
+                            r.Error("Удаление из очереди pg_direct", res.e);
                             return false;
                         }
                     }
@@ -307,7 +307,7 @@ namespace MyFantasy.ETLEngine.Common
                         }
                         else
                         {
-                            r.Error(res.e);
+                            r.Error("Отметка об успешном получении сообщения в очереди ms", res.e);
                             return false;
                         }
                     }
@@ -320,7 +320,7 @@ namespace MyFantasy.ETLEngine.Common
                         }
                         else
                         {
-                            r.Error(res.e);
+                            r.Error("Отметка об успешном получении сообщения в очереди ms_direct", res.e);
                             return false;
                         }
 
@@ -334,7 +334,7 @@ namespace MyFantasy.ETLEngine.Common
                         }
                         else
                         {
-                            r.Error(res.e);
+                            r.Error("Отметка об успешном получении сообщения в очереди pg", res.e);
                             return false;
                         }
                     }
@@ -347,7 +347,7 @@ namespace MyFantasy.ETLEngine.Common
                         }
                         else
                         {
-                            r.Error(res.e);
+                            r.Error("Отметка об успешном получении сообщения в очереди pg_direct", res.e);
                             return false;
                         }
                     }
