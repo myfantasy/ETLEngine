@@ -21,7 +21,7 @@ namespace MyFantasy.ETLEngine.Common
 
             DoJob(r, src_type, src_name, src_url, query, limit, timeout);
         }
-        public static bool DoJob(Rule r, string src_type, string src_name, string src_url, string query, int limit, int timeout, bool set_complite = true)
+        public static bool DoJob(Rule r, string src_type, string src_name, string src_url, string query, int limit, int timeout, bool set_complete = true)
         {          
 
             bool recall = true;
@@ -137,8 +137,8 @@ namespace MyFantasy.ETLEngine.Common
                 }
             }
 
-            if (set_complite)
-                r.Complite();
+            if (set_complete)
+                r.Complete();
             return true;
         }
     }

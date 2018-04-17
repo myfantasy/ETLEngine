@@ -21,7 +21,7 @@ namespace MyFantasy.ETLEngine
             var res = ReloadRules(r.Query);
             if (res)
             {
-                r.Complite();
+                r.Complete();
                 OnReload?.Invoke();
             }
             else

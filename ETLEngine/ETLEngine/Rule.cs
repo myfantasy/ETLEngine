@@ -18,7 +18,8 @@ namespace MyFantasy.ETLEngine
             { "Job",  Common.Job.DoJob },
             { "QueueLoad", (r) => Common.CopyTable.QueueLoad(r) },
             { "CopyToTable", (r) => Common.CopyTable.CopyToTable(r) },
-            { "ReloadRules",  Dispatcher.ReloadRules }
+            { "ReloadRules",  Dispatcher.ReloadRules },
+            { "CopyToService", (r) => Common.CopyTable.CopyToService(r) }
         };        
 
 
@@ -38,25 +39,27 @@ namespace MyFantasy.ETLEngine
         public string SrcQuery { get { return Params.GetElement<string>("src_query"); } }
         public string SrcIDName { get { return Params.GetElement<string>("src_id_name"); } }
         public string DstTable { get { return Params.GetElement<string>("dst_table"); } }
+        public string DstFieldName { get { return Params.GetElement<string>("dst_field_name"); } }
+        public string DstUrl { get { return Params.GetElement<string>("dst_url"); } }
         public int Timeout { get { return (int)Params.GetElement("timeout").TryParseOrDefault(10L); } }
         public int Limit { get { return (int)Params.GetElement("limit").TryParseOrDefault(1000L); } }
         public string DstReadyFlagName { get { return Params.GetElement<string>("dst_ready_flag_name"); } }
-        public string SrcCompliteProc { get { return Params.GetElement<string>("src_complite_proc"); } }
-        public string DstPrepareCompliteProc { get { return Params.GetElement<string>("dst_prepare_complite_proc"); } }
-        public string DstCompliteProc { get { return Params.GetElement<string>("dst_complite_proc"); } }
+        public string SrcCompleteProc { get { return Params.GetElement<string>("src_complite_proc") ?? Params.GetElement<string>("src_complete_proc"); } }
+        public string DstPrepareCompleteProc { get { return Params.GetElement<string>("dst_prepare_complite_proc") ?? Params.GetElement<string>("dst_prepare_complete_proc"); } }
+        public string DstCompleteProc { get { return Params.GetElement<string>("dst_complite_proc") ?? Params.GetElement<string>("dst_complete_proc"); } }
 
         public long? RepeatTimeout { get { return Params.GetElement<long?>("repeat_timeout"); } }
 
-        public bool DoNotSendComplite { get { return Params.GetElement<bool>("do_not_send_complite"); } }
+        public bool DoNotSendComplete { get { return Params.GetElement<bool?>("do_not_send_complite") ?? Params.GetElement<bool>("do_not_send_complete"); } }
 
         public bool isEnable = true;
 
 
         public string ErrorUrl { get { return Params.GetElement<string>("error_url"); } }
-        public string CompliteUrl { get { return Params.GetElement<string>("complite_url"); } }
+        public string CompleteUrl { get { return Params.GetElement<string>("complite_url") ?? Params.GetElement<string>("complete_url"); } }
 
         public static string GlobalErrorUrl = null;
-        public static string GlobalCompliteUrl = null;
+        public static string GlobalCompleteUrl = null;
 
         public static List<Rule> LoadSettingsFromFile(string file_name)
         {
@@ -112,7 +115,7 @@ namespace MyFantasy.ETLEngine
             var conn_settings = js.GetElement<LO>("conn_settings");
 
             GlobalErrorUrl = js.ContainsElement("global_error_url") ? js.GetElement<string>("global_error_url") : GlobalErrorUrl;
-            GlobalCompliteUrl = js.ContainsElement("global_error_url") ? js.GetElement<string>("global_complite_url") : GlobalCompliteUrl;
+            GlobalCompleteUrl = js.ContainsElement("global_complite_url") ? js.GetElement<string>("global_complite_url") : js.ContainsElement("global_complete_url") ? js.GetElement<string>("global_complete_url") : GlobalCompleteUrl;
 
             if (!conn_settings.IsNullOrEmpty())
             {
@@ -252,17 +255,17 @@ namespace MyFantasy.ETLEngine
                 HttpQuery.CallService(url, new Dictionary<string, object>() { { "exception", ex.Message }, { "trace", ex.StackTrace }, { "name", RuleName }, { "date_last_start", LastStart }, { "date_err", DateTime.Now } }, timeoutSeconds: 10).GetAwaiter().GetResult();
             }
         }
-        public void Complite()
+        public void Complete()
         {
-            OnComplite?.Invoke(this);
+            OnComplete?.Invoke(this);
 
-            if (DoNotSendComplite)
+            if (DoNotSendComplete)
             {
-                string url = CompliteUrl ?? GlobalCompliteUrl;
+                string url = CompleteUrl ?? GlobalCompleteUrl;
 
                 if (!url.IsNullOrWhiteSpace())
                 {
-                    HttpQuery.CallService(url, new Dictionary<string, object>() { { "name", RuleName }, { "date_last_start", LastStart }, { "date_complite", DateTime.Now } }, timeoutSeconds: 10).GetAwaiter().GetResult();
+                    HttpQuery.CallService(url, new Dictionary<string, object>() { { "name", RuleName }, { "date_last_start", LastStart }, { "date_complete", DateTime.Now } }, timeoutSeconds: 10).GetAwaiter().GetResult();
                 }
             }
         }
@@ -270,7 +273,7 @@ namespace MyFantasy.ETLEngine
         /// <summary>
         /// Таск выполнен успешно
         /// </summary>
-        public static event Action<Rule> OnComplite;
+        public static event Action<Rule> OnComplete;
 
         /// <summary>
         /// Таск выполнен не успешно
