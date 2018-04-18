@@ -7,15 +7,15 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>MyFantasy.ru</Authors>
     <Company>MyFantasy.ru</Company>
-    <Version>1.0.0.12</Version>
+    <Version>1.0.0.13</Version>
     <Description>Простой ETL</Description>
     <RepositoryUrl>https://github.com/myfantasy/ETLEngine</RepositoryUrl>
-    <FileVersion>1.0.0.12</FileVersion>
-    <AssemblyVersion>1.0.0.12</AssemblyVersion>
+    <FileVersion>1.0.0.13</FileVersion>
+    <AssemblyVersion>1.0.0.13</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MyFantasy.SqlProviderExt" Version="1.0.1.10" />
+    <PackageReference Include="MyFantasy.SqlProviderExt" Version="1.0.1.14" />
   </ItemGroup>
 
   <ItemGroup>

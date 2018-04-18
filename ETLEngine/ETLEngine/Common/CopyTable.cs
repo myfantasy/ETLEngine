@@ -411,7 +411,7 @@ namespace MyFantasy.ETLEngine.Common
 
             var src_id_name = r.SrcIDName;
 
-            var src_query = r.SrcQuery ?? "select * from " + src_table + (src_id_name.IsNullOrWhiteSpace() ? "" : " order by " + src_id_name) + ";";
+            var src_query = r.SrcQuery ?? "select * from " + src_table + (src_id_name.IsNullOrWhiteSpace() ? "" : " order by " + src_id_name) + " limit 10000;";
 
             long? _id = null;
 
@@ -430,7 +430,7 @@ namespace MyFantasy.ETLEngine.Common
 
                     var res = HttpQuery.CallService(dst_url, dst_name, timeoutSeconds: timeout, args: new DSO() { { dst_field_name, d } }).GetAwaiter().GetResult();
 
-                    if (res.Item2 == System.Net.HttpStatusCode.OK)
+                    if ((int)res.Item2 >= 200 && (int)res.Item2 < 300)
                     {
                         var js = res.Item1.TryGetFromJson();
                         return new Tuple<bool, Exception>(true, null);
@@ -446,7 +446,7 @@ namespace MyFantasy.ETLEngine.Common
 
 
             string src_complete_proc_do = src_complete_proc?.Replace("{id}", _id.ConvertToDB());
-            string src_c_query = src_complete_proc_do ?? "delete from " + src_table + " where " + src_id_name +" <= " + _id.ConvertToDB() + ";";
+            string src_c_query = src_complete_proc_do ?? "delete from " + src_table + " where " + src_id_name + " <= " + _id.ConvertToDB() + ";";
 
             if (src_type == "ms")
             {
@@ -460,7 +460,7 @@ namespace MyFantasy.ETLEngine.Common
                             r.Error("Запись факта прочтения с ошибкой", res_c.e);
                         }
                     }
-                    
+
                     if (set_complete)
                         r.Complete();
                     return true;
@@ -536,7 +536,7 @@ namespace MyFantasy.ETLEngine.Common
                     r.Error("Получение данных из источника pg_direct", res.e);
                 }
             }
-            
+
             return false;
         }
     }
