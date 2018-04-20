@@ -445,8 +445,7 @@ namespace MyFantasy.ETLEngine.Common
             }
 
 
-            string src_complete_proc_do = src_complete_proc?.Replace("{id}", _id.ConvertToDB());
-            string src_c_query = src_complete_proc_do ?? "delete from " + src_table + " where " + src_id_name + " <= " + _id.ConvertToDB() + ";";
+            string src_complete_proc_do = src_complete_proc?.Replace("{id}", _id.ConvertToDB());            
 
             if (src_type == "ms")
             {
@@ -455,6 +454,7 @@ namespace MyFantasy.ETLEngine.Common
                 {
                     if (_id.HasValue)
                     {
+                        string src_c_query = src_complete_proc_do ?? "delete from " + src_table + " where " + src_id_name + " <= " + _id.ConvertToDB() + ";";
                         if (!src_c_query.Execute(src_name, out var res_c, timeout))
                         {
                             r.Error("Запись факта прочтения с ошибкой", res_c.e);
@@ -477,6 +477,7 @@ namespace MyFantasy.ETLEngine.Common
                 {
                     if (_id.HasValue)
                     {
+                        string src_c_query = src_complete_proc_do ?? "delete from " + src_table + " where " + src_id_name + " <= " + _id.ConvertToDB() + ";";
                         if (!src_c_query.Execute(out var res_c, src_name, timeout))
                         {
                             r.Error("Запись факта прочтения с ошибкой", res_c.e);
@@ -499,6 +500,7 @@ namespace MyFantasy.ETLEngine.Common
                 {
                     if (_id.HasValue)
                     {
+                        string src_c_query = src_complete_proc_do ?? "delete from " + src_table + " where " + src_id_name + " <= " + _id.ConvertToDB() + ";";
                         if (!src_c_query.ExecutePg(src_name, out var res_c, timeout))
                         {
                             r.Error("Запись факта прочтения с ошибкой", res_c.e);
@@ -521,6 +523,7 @@ namespace MyFantasy.ETLEngine.Common
                 {
                     if (_id.HasValue)
                     {
+                        string src_c_query = src_complete_proc_do ?? "delete from " + src_table + " where " + src_id_name + " <= " + _id.ConvertToDB() + ";";
                         if (!src_c_query.ExecutePg(out var res_c, src_name, timeout))
                         {
                             r.Error("Запись факта прочтения с ошибкой", res_c.e);
